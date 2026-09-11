@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.HttpLogging;
-
 namespace ASP.NET_Practice
 {
     public class Program
@@ -9,47 +7,44 @@ namespace ASP.NET_Practice
             // Determines how the web app is configured (runtime behavior, services, logging, etc.)
             // Sets the Kestrel web server by default
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-
-            // Logging middleware for HTTP logging
-            builder.Services.AddHttpLogging(opts =>
-                opts.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders);
-
-            // Customization for HTTP Logging
-            builder.Logging.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.Information); // Severity level of 'Information' or higher will be logged
-
-
-            // Creates the web application instance with the configuration defined in the builder
-            // Defines how the app responds to HTTP requests, including middleware and endpoints
             WebApplication app = builder.Build();
 
-            // The middleware was set up, and now it is added to the middleware pipeline conditionally based on the environment
-            // If this isn't here, logging won't occur in the terminal display
-            if (app.Environment.IsDevelopment())
+
+            // Setting middleware
+            app.UseDeveloperExceptionPage();;
+            app.UseStaticFiles();
+            app.UseRouting();
+
+            var people = new List<Person>
             {
-                app.UseHttpLogging();
-            }
+                new Person("Tim", "Huddel", 55),
+                new Person("Tom", "Hanks", 45),
+                new Person("Will", "Ferrel", 50),
+                new Person("Marty", "McFly", 60),
+            };
 
-            app.UseWelcomePage();
 
-            // This is the endpoint which defines how to handle a request that uses the 'get' HTTP verb
-            // Routing middleware selects the appropriate endpoint here
-            app.MapGet("/", () =>
-            {
-                string x = "Hello World!\n";
-                string y = "Goodbye World!\n";
-                string z = x + y;
-                return z;
-            });
+            // MapGet() is a method that defines an endpoint, typically called after MW and before Run()
+            app.MapGet("/", () => "Hello World!");
 
-            app.MapGet("/person", () => new Person("John", "Doe"));
+            app.MapGet("/Error", () => "An error occurred.");
 
+            app.MapGet("/person/{name}", (string name) =>
+                people.Where(x => x.FirstName.ToLower().StartsWith(name.ToLower())));
+
+            app.MapGet("/agesearch/{age}", (int age) =>
+                people.Where(x => x.Age >= age));
 
             // Only now does the web application start and begin listening for incoming HTTP requests
-            // It is NOT listening for requetss during the WebApplicationBuilder or WebApplication phases
+            // It is NOT listening for requests during the WebApplicationBuilder or WebApplication phases
             app.Run();
         }
+    }
 
-        public record Person(string FirstName, string LastName);
+    public class Person(string first, string last, int age)
+    {
+        public string FirstName { get; set; } = first;
+        public string LastName { get; set; } = last;
+        public int Age { get; set; } = age;
     }
 }
