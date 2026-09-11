@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace LinkedList_Practice
 {
@@ -37,16 +37,23 @@ namespace LinkedList_Practice
             ReverseSentence(linkedList2, "Reversed LinkedList values:");
 
             FindAndReplace(linkedList2, "\nFinding and replacing 'dog' with 'cat'");
+
+            DisplayAllWords(sentence, "Current sentence after being passed through methods");
+
+            MemberInfo[] m = typeof(LinkedList<string>).GetMembers();
+            foreach (var item in m)
+            {
+                Console.WriteLine($"{m.IndexOf(item) + 1}. {item}");   
+            }
         }
 
         static void DisplayAllWords(LinkedList<string> mySentence, string text)
         {
             Console.WriteLine(text);
-            foreach (string word in mySentence)
-            {
-                Console.Write(word + " ");
-            }
-            Console.WriteLine("\n");
+
+            mySentence.ToList().ForEach(word => Console.Write(word + " "));
+
+            Console.WriteLine();
         }
 
         static void GetNode(LinkedList<string> mySentence)
