@@ -1,4 +1,6 @@
-﻿namespace Delegates_Practice
+﻿using System.IO.Pipes;
+
+namespace Delegates_Practice
 {
     internal class Program
     {
@@ -6,67 +8,95 @@
         public delegate void Warning(string s);
         public delegate void GenericDelegate<T>(T arg);
         public delegate void GenericTupleDelegate<T1, T2>((T1, T2) tuple);
+        public delegate void WarningWithEventArg(object o, CustomEventArgs e);
+
+        static event Warning MajorWarningEvent;
+        static event Warning MinorWarningEvent;
+        static event WarningWithEventArg WarningWithArgs;
 
 
         static void Main(string[] args)
         {
-            // Testing a basic math operation delegate
-            MathOps mo = new MathOps(Add);
-            mo += Subtract;
-            mo += Multiply;
-            mo += Divide;
+            //// Testing a basic math operation delegate
+            //MathOps mo = new MathOps(Add);
+            //mo += Subtract;
+            //mo += Multiply;
+            //mo += Divide;
 
-            foreach (MathOps delType in mo.GetInvocationList())
-            {
-                int result = delType.Invoke(11, 7);
-                
-                Console.WriteLine($"Method Name: {delType.Method.Name}");
-                Console.WriteLine($"Method Attributes: {delType.Method.Attributes}");
-                Console.WriteLine($"Method Target: {delType.Target ?? "None"}");
-                Console.WriteLine($"Result: {result}\n");
-            }
+            //foreach (MathOps delType in mo.GetInvocationList())
+            //{
+            //    int result = delType.Invoke(11, 7);
 
-
-            // Testing a basic delegate with strings, and method group conversion syntax
-            Warning w = new Warning(WarningMessage);
-            WarningInvocation(w);
-            WarningInvocation(mo);
-            WarningInvocation(new Warning(WarningMessage)); // Method Group Conversion 
+            //    Console.WriteLine($"Method Name: {delType.Method.Name}");
+            //    Console.WriteLine($"Method Attributes: {delType.Method.Attributes}");
+            //    Console.WriteLine($"Method Target: {delType.Target ?? "None"}");
+            //    Console.WriteLine($"Result: {result}\n");
+            //}
 
 
-            // Testing generic delegates with different inputs
-            GenericDelegate<string> genericStringDelegate = new GenericDelegate<string>(GenericStringTarget);
-            GenericDelegate<int> genericIntDelegate = new GenericDelegate<int>(GenericIntTarget);
-            genericStringDelegate.Invoke("Goodbye, World!");
-            genericIntDelegate.Invoke(42);
-
-            GenericTupleDelegate<string, int> genericTupleDelegate = new GenericTupleDelegate<string, int>(GenericTupleTarget);
-            genericTupleDelegate.Invoke(("Goodbye, World!", 100));
-
-            GenericTupleDelegate<int, string> genericTupleDelegate2 = new GenericTupleDelegate<int, string>(GenericTupleTarget);
-            genericTupleDelegate2.Invoke((001, "Goodbye, World! Tuple flipped!"));
-
-            GenericTupleDelegate<double, double> genericTupleDelegate3 = new GenericTupleDelegate<double, double>(GenericTupleTarget);
-            genericTupleDelegate3.Invoke((3.14, 2.71));
-
-            GenericDelegate<string> genDelStr = new GenericDelegate<string>(GenericTarget<string>);
-            genDelStr.Invoke("Hello!");
-
-            GenericDelegate<int> genDelInt = new GenericDelegate<int>(GenericTarget<int>);
-            genDelInt.Invoke(2);
+            //// Testing a basic delegate with strings, and method group conversion syntax
+            //Warning w = new Warning(WarningMessage);
+            //WarningInvocation(w);
+            //WarningInvocation(mo);
+            //WarningInvocation(new Warning(WarningMessage)); // Method Group Conversion 
 
 
-            // Action/Func practice
-            Action<string, string, string> a1 = ActionTarget;
-            a1.Invoke("Hello", "Goodbye", "World");
+            //// Testing generic delegates with different inputs
+            //GenericDelegate<string> genericStringDelegate = new GenericDelegate<string>(GenericStringTarget);
+            //GenericDelegate<int> genericIntDelegate = new GenericDelegate<int>(GenericIntTarget);
+            //genericStringDelegate.Invoke("Goodbye, World!");
+            //genericIntDelegate.Invoke(42);
 
-            Action<int, int, bool> a2 = ActionTarget;
-            a2.Invoke(1, 2, true);
+            //GenericTupleDelegate<string, int> genericTupleDelegate = new GenericTupleDelegate<string, int>(GenericTupleTarget);
+            //genericTupleDelegate.Invoke(("Goodbye, World!", 100));
 
-            Action<object, List<string>, Dictionary<string, int>> a3 = ActionTarget;
-            a3.Invoke(null, new List<string> { "Item 1", "Item 2" }, new Dictionary<string, int> { { "Key 1", 1 }, { "Key 2", 2 } });
+            //GenericTupleDelegate<int, string> genericTupleDelegate2 = new GenericTupleDelegate<int, string>(GenericTupleTarget);
+            //genericTupleDelegate2.Invoke((001, "Goodbye, World! Tuple flipped!"));
 
+            //GenericTupleDelegate<double, double> genericTupleDelegate3 = new GenericTupleDelegate<double, double>(GenericTupleTarget);
+            //genericTupleDelegate3.Invoke((3.14, 2.71));
+
+            //GenericDelegate<string> genDelStr = new GenericDelegate<string>(GenericTarget<string>);
+            //genDelStr.Invoke("Hello!");
+
+            //GenericDelegate<int> genDelInt = new GenericDelegate<int>(GenericTarget<int>);
+            //genDelInt.Invoke(2);
+
+
+            //// Action/Func practice
+            //Action<string, string, string> a1 = ActionTarget;
+            //a1.Invoke("Hello", "Goodbye", "World");
+
+            //Action<int, int, bool> a2 = ActionTarget;
+            //a2.Invoke(1, 2, true);
+
+            //Action<object, List<string>, Dictionary<string, int>> a3 = ActionTarget;
+            //a3.Invoke(null, new List<string> { "Item 1", "Item 2" }, new Dictionary<string, int> { { "Key 1", 1 }, { "Key 2", 2 } });
+
+
+            //// Events practice
+            //Console.WriteLine("Beginning Events practice");
+            //MajorWarningEvent += MajorWarningMessage;
+            //MinorWarningEvent += MinorWarningMessage;
+
+            //Console.Write("Enter a number: ");
+            //string num = Console.ReadLine();
+
+            //if (num == "1")
+            //{
+            //    MajorWarningEvent?.Invoke("This is a major warning event");
+            //}
+            //else
+            //{
+            //    MinorWarningEvent?.Invoke("This is just a minor warning event");
+            //}
+
+            Console.WriteLine("Testing EventArgs");
+            WarningWithArgs += WarningWithArgsMethod;
+
+            WarningWithArgs.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
         }
+    
 
         static int Add(int x, int y) => x + y;
         static int Subtract(int x, int y) => x - y;
@@ -113,6 +143,21 @@
             Console.WriteLine("A Warning Message");
             Console.WriteLine($"\t => {s}");
         }
+        static void MajorWarningMessage(string s)
+        {
+            Console.WriteLine("A Major Warning Message");
+            Console.WriteLine($"\t => {s}");
+        }
+        static void MinorWarningMessage(string s)
+        {
+            Console.WriteLine("A Minor Warning Message");
+            Console.WriteLine($"\t => {s}");
+        }
+        static void WarningWithArgsMethod(object o, CustomEventArgs e)
+        {
+            Console.WriteLine($"Sent from {o}, message: {e.msg}");
+            Console.WriteLine($"Identification: {e.idNum}");
+        }
 
         static void GenericStringTarget(string s)
         {
@@ -153,5 +198,17 @@
 
             return typeof(TResult);
         }   
+    }
+
+    public class CustomEventArgs : EventArgs
+    {
+        public readonly string msg;
+        public Guid idNum { get; set; }
+
+        public CustomEventArgs(string s)
+        {
+            msg = s;
+            idNum = Guid.NewGuid();
+        }
     }
 }
