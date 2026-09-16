@@ -1,50 +1,72 @@
+using System.Net.Mime;
+
 namespace ASP.NET_Practice
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            Handlers handlers = new();
+
+            Fruit.All.Add("1", new Fruit("Banana", 100));
+            Fruit.All.Add("2", new Fruit("Orange", 1500));
+
             // Determines how the web app is configured (runtime behavior, services, logging, etc.)
             // Sets the Kestrel web server by default
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             WebApplication app = builder.Build();
 
 
-            // Setting middleware
-            app.UseDeveloperExceptionPage();;
-            app.UseStaticFiles();
-            app.UseRouting();
+            app.MapGet("/", () => "Goodbye, world!!\nAnd also hello!");
 
-            var people = new List<Person>
+            app.MapGet("/fruit", () => Fruit.All);
+
+            //var getFruit = (string id) => Fruit.All[id];
+            app.MapGet("/fruit/{id}", (string id) => 
+                Fruit.All.TryGetValue(id, out var fruit)
+                ? TypedResults.Ok(fruit)
+                : Results.Problem(statusCode: 404));
+
+            app.MapGet("/vegetables", (HttpResponse response) =>
             {
-                new Person("Tim", "Huddel", 55),
-                new Person("Tom", "Hanks", 45),
-                new Person("Will", "Ferrel", 50),
-                new Person("Marty", "McFly", 60),
-            };
+                response.StatusCode = 418;
+                response.ContentType = MediaTypeNames.Text.Plain;
+                response.WriteAsync("Im a veggie...\n");
 
+                return response.WriteAsync("I'm a veggie!");
+            });
 
-            // MapGet() is a method that defines an endpoint, typically called after MW and before Run()
-            app.MapGet("/", () => "Hello World!");
+            //app.MapPost("/fruit/{id}", handlers.AddFruit);
 
-            app.MapGet("/Error", () => "An error occurred.");
+            //app.MapPut("/fruit{id}", handlers.ReplaceFruit);
 
-            app.MapGet("/person/{name}", (string name) =>
-                people.Where(x => x.FirstName.ToLower().StartsWith(name.ToLower())));
-
-            app.MapGet("/agesearch/{age}", (int age) =>
-                people.Where(x => x.Age >= age));
+            //app.MapDelete("/fruit/{id}", DeleteFruit);
 
             // Only now does the web application start and begin listening for incoming HTTP requests
             // It is NOT listening for requests during the WebApplicationBuilder or WebApplication phases
             app.Run();
+
+            void DeleteFruit(string id)
+            {
+                Fruit.All.Remove(id);
+            }
         }
     }
 
-    public class Person(string first, string last, int age)
+    record Fruit(string Name, int Stock)
     {
-        public string FirstName { get; set; } = first;
-        public string LastName { get; set; } = last;
-        public int Age { get; set; } = age;
+        public static readonly Dictionary<string, Fruit> All = new();
+    }
+    class Handlers
+    {
+        public void ReplaceFruit(string id, Fruit fruit)
+        {
+            Fruit.All[id] = fruit;
+        }
+
+        public void AddFruit(string id, Fruit fruit)
+        {
+            Fruit.All.Add(id, fruit);
+        }
     }
 }
