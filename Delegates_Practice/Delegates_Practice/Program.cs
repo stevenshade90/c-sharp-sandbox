@@ -14,6 +14,8 @@ namespace Delegates_Practice
         static event Warning MinorWarningEvent;
         static event WarningWithEventArg WarningWithArgs;
 
+        static event EventHandler<CustomEventArgs> WarnWithArgs;
+
 
         static void Main(string[] args)
         {
@@ -91,10 +93,20 @@ namespace Delegates_Practice
             //    MinorWarningEvent?.Invoke("This is just a minor warning event");
             //}
 
-            Console.WriteLine("Testing EventArgs");
-            WarningWithArgs += WarningWithArgsMethod;
+            //Console.WriteLine("Testing EventArgs");
+            //WarningWithArgs += WarningWithArgsMethod;
 
-            WarningWithArgs.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
+            //WarningWithArgs.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
+
+
+            Console.WriteLine("\nTesting generic EventHandler<T>");
+            EventHandler<CustomEventArgs> e = WarningWithArgsMethod;
+            e += AlternateWarningWithArgs;
+
+            e.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
+
+            Program.WarnWithArgs += WarningWithArgsMethod;
+            Program.WarnWithArgs.Invoke("Testing static", new CustomEventArgs("Test"));
         }
     
 
@@ -157,6 +169,10 @@ namespace Delegates_Practice
         {
             Console.WriteLine($"Sent from {o}, message: {e.msg}");
             Console.WriteLine($"Identification: {e.idNum}");
+        }
+        static void AlternateWarningWithArgs(object o, CustomEventArgs e)
+        {
+            Console.WriteLine("In the alternate warning method");
         }
 
         static void GenericStringTarget(string s)
