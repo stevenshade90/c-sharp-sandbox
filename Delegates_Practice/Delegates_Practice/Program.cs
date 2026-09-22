@@ -1,4 +1,6 @@
 ﻿using System.IO.Pipes;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Delegates_Practice
 {
@@ -99,16 +101,36 @@ namespace Delegates_Practice
             //WarningWithArgs.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
 
 
-            Console.WriteLine("\nTesting generic EventHandler<T>");
-            EventHandler<CustomEventArgs> e = WarningWithArgsMethod;
-            e += AlternateWarningWithArgs;
+            //Console.WriteLine("\nTesting generic EventHandler<T>");
+            //EventHandler<CustomEventArgs> e = WarningWithArgsMethod;
+            //e += AlternateWarningWithArgs;
 
-            e.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
+            //e.Invoke(new { Name = "Steve" }, new CustomEventArgs("In the custom event args"));
 
-            Program.WarnWithArgs += WarningWithArgsMethod;
-            Program.WarnWithArgs.Invoke("Testing static", new CustomEventArgs("Test"));
+            //Program.WarnWithArgs += WarningWithArgsMethod;
+            //Program.WarnWithArgs.Invoke("Testing static", new CustomEventArgs("Test"));
+
+            Console.WriteLine("Anonymous Methods");
+            Program.MajorWarningEvent += delegate (string s)
+            {
+                Console.WriteLine("Oh no!");
+                Console.WriteLine(s);
+            };
+
+            Program.MajorWarningEvent.Invoke("Yikes");
+
+            Program.WarnWithArgs += static delegate (object sender, CustomEventArgs e)
+            {
+                Console.WriteLine("In the WarnWithArgs anonymous method");
+                Console.WriteLine($"Sender: {sender}");
+                Console.WriteLine($"Arg message: {e.msg}");
+                Console.WriteLine($"ID Num: {e.idNum}");
+            };
+
+            Program.WarnWithArgs.Invoke(new { Name = "Steve" }, new CustomEventArgs("New message"));
+
         }
-    
+
 
         static int Add(int x, int y) => x + y;
         static int Subtract(int x, int y) => x - y;
