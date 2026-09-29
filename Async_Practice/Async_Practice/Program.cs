@@ -1,50 +1,82 @@
-﻿namespace Async_Practice
+﻿
+namespace Async_Practice
 {
     internal class Program
     {
+        static CancellationTokenSource tokenSource = new CancellationTokenSource();
+
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Starting...");
 
-            Task<string> t = DoWorkAsync();
+            //Console.WriteLine("Starting...");
 
-            Console.WriteLine("Continuing work on the main thread...");
-            for (int i = 0; i < 5; i++)
+            //Task<string> t = DoWorkAsync();
+            //await LoadingImage(t);
+
+            //Console.WriteLine("\nContinuing work on the main thread...");
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    Console.WriteLine($"Working... {i}");
+            //    await Task.Delay(1000);
+            //}
+
+            //Console.WriteLine("Main thread finished!");
+
+            //var s = await t;
+            //Console.WriteLine(s);
+
+            //Thread.Sleep(2000);
+            Console.WriteLine("Beginning WhenAll tasks!");
+
+            try
             {
-                Console.WriteLine($"Working... {i}");
-                await Task.Delay(1000);
+                await TestingWhenAllAsync().WaitAsync(tokenSource.Token);
+            }
+            catch (OperationCanceledException ex)
+            {
+                Console.WriteLine($"Ended execution! Message: {ex.Message}");
             }
 
-            Console.WriteLine("Main thread finished!");
+            //Async stream
+            await foreach (var num in GenerateNumbers())
+            {
+                Console.WriteLine(num);
+            }
 
-            var s = await t;
-            Console.WriteLine(s);
+            String[] names = { "Steve", "Tim", "Jeff" };
+            await Parallel.ForEachAsync(names,  async (name, tokenSource) =>
+            {
+                Console.WriteLine("Hello {0}", name);
 
-            Thread.Sleep(2000);
-            Console.WriteLine("Beginning whenall tasks!");
-
-            await TestingWhenAllAsync();
-
+            });
         }
 
+        static async IAsyncEnumerable<int> GenerateNumbers()
+        {
+            for (int i = 0; i < 50; i++)
+            {
+                await Task.Delay(100);
+                yield return i+1;
+            }
+        }
         static async Task<string> DoWorkAsync()
         {
             await Task.Run(() =>
             {
                 Thread.Sleep(2_000);
-                Console.WriteLine("Task 1 complete");
+                Console.Write("\rWaiting for task to complete... Task 1 Complete\n");
             });
             await Task.Run(() =>
             {
                 Thread.Sleep(2_000);
-                Console.WriteLine("Task 2 complete");
+                Console.Write("\rWaiting for task to complete... Task 2 Complete\n");
             });
             await Task.Run(() =>
             {
                 Thread.Sleep(2_000);
-                Console.WriteLine("Task 3 complete");
+                Console.Write("\rWaiting for task to complete... Task 3 Complete\n");
             });
-            return "All inner tasks complete!";
+            return "All preliminary tasks complete!";
         }
 
         static async Task TestingWhenAllAsync()
@@ -57,6 +89,7 @@
             {
                 Thread.Sleep(1_000);
                 Console.WriteLine("Completed Task 5");
+                //tokenSource.Cancel();
             }), Task.Run(() =>
             {
                 Thread.Sleep(3_000);
@@ -66,6 +99,19 @@
                 Thread.Sleep(2_000);
                 Console.WriteLine("Completed Task 7");
             }));       
+        }
+        static async Task LoadingImage(Task awaitingTask)
+        {
+            int iterator = 1;
+            char[] loading = { '|', '/', '-', '\\' };
+
+
+            while (!awaitingTask.IsCompleted)
+            {
+                Console.Write("\rWaiting for task to complete... {0}", loading[iterator % 4]);
+                iterator++;
+                Thread.Sleep(100);
+            }
         }
     }
 }
