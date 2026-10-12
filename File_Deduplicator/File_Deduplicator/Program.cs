@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,15 +18,19 @@ namespace File_Deduplicator
             DirectoryInfo dir1 = new DirectoryInfo(@"C:\Users\steve\Downloads");
             DirectoryInfo[] directories = dir1.GetDirectories();
 
-            DisplaySectionHeader("Drive Information");
+            Console.WriteLine(DisplaySectionHeader("Drive Information"));
             await GetDriveInfo(drives);
 
 
-            DisplaySectionHeader("Gathering All Files");
+            Console.WriteLine(DisplaySectionHeader("Gathering All Files"));
             ConcurrentBag<FileInfo> allFilesBag = await ReadDirectoriesAsync(directories); // Contains every file from all directories 
             List<FileInfo> filesConvertedToList = allFilesBag.ToList();
 
             Dictionary<FileInfo, string> convertedData = ConvertData(filesConvertedToList);
+            ReadConvertedData(convertedData);
+
+
+            Environment.Exit(0);
 
             /*
              * 
@@ -68,6 +73,19 @@ namespace File_Deduplicator
             duplicatesToRemove.ForEach(f => Console.WriteLine($"\tDuplicate File: {f.FullName} (Size: {BytesConversion(f.Length)})"));
         }
 
+        static void ReadConvertedData(Dictionary<FileInfo, string> convertedData)
+        {
+            Console.WriteLine(convertedData.Count());
+            foreach (var kvp in convertedData)
+            {
+                FileInfo file = kvp.Key;
+                string hashString = kvp.Value;
+
+                Console.WriteLine($"File: {file.FullName} -- Hash: {hashString}");
+                Console.WriteLine();
+            }
+        }
+
         static string DisplaySectionHeader(string text) => $"********** {text} **********";
 
         static async Task GetDriveInfo(DriveInfo[] drives)
@@ -90,7 +108,6 @@ namespace File_Deduplicator
                 }
                 Console.WriteLine();
             }
-            await Task.Delay(5000);
         }
 
         static async Task<ConcurrentBag<FileInfo>> ReadDirectoriesAsync(DirectoryInfo[] directories)
@@ -104,24 +121,25 @@ namespace File_Deduplicator
             {
                 FileInfo[] files = directory.GetFiles("*", SearchOption.AllDirectories);
 
-                //Console.WriteLine($"Current Directory: {directory.FullName}");
-                //Console.WriteLine($"Number of files: {files.Count()}");
+                Console.WriteLine($"Current Directory: {directory.FullName}");
+                Console.WriteLine($"Number of files: {files.Count()}");
 
-                //int i = 1;
+                int i = 1;
                 foreach (FileInfo file in files)
                 {
                     allFiles.Add(file);
 
-                    //Console.WriteLine($"\tFile {i++}: {file.Name} (Size: {BytesConversion(file.Length)})");
+                    Console.WriteLine($"\tFile {i++}: {file.Name} (Size: {BytesConversion(file.Length)})");
                 }
                 //runningTotal += files.Count();
                 //Console.WriteLine();
             }
             //Console.WriteLine($"Total number of files: {runningTotal}");
+            Console.WriteLine("Done processing all files!");
             return allFiles;
         }
 
-        static Dictionary<FileInfo, string> ConvertData(List<FileInfo> filesToConvert)
+        static Dictionary<FileInfo, string> ConvertData(List<FileInfo> filesToConvert) 
         {
             /* 
              * Gathering FileInfo object and the file's hashString to use for comparison later to
@@ -131,12 +149,20 @@ namespace File_Deduplicator
 
             foreach (FileInfo file in filesToConvert)
             {
+                // Will need to update the method to accept files > 2GB in size, but for now skip them 
+                if (file.Length > (BYTES_IN_GB * 2)) 
+                {
+                    Console.WriteLine("Not adding");
+                    continue;
+                }
+                Console.WriteLine("Adding!");
                 byte[] dataBytes = File.ReadAllBytes(file.FullName);
                 byte[] hashBytes = SHA256.HashData(dataBytes);
                 string hashString = Convert.ToHexString(hashBytes); // COMPARE ON THIS LATER
 
                 fileAndHashString[file] = hashString;
             }
+            Console.WriteLine("Finished adding files to dictionary");
             return fileAndHashString;
         }
 
