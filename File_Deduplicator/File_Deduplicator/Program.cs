@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,7 +27,7 @@ namespace File_Deduplicator
             ConcurrentBag<FileInfo> allFilesBag = await ReadDirectoriesAsync(directories); // Contains every file from all directories 
             List<FileInfo> filesConvertedToList = allFilesBag.ToList();
 
-            Dictionary<FileInfo, string> convertedData = ConvertData(filesConvertedToList);
+            Task<Dictionary<FileInfo, string>> convertedData = ConvertData(filesConvertedToList);
             ReadConvertedData(convertedData);
 
 
@@ -73,10 +74,9 @@ namespace File_Deduplicator
             duplicatesToRemove.ForEach(f => Console.WriteLine($"\tDuplicate File: {f.FullName} (Size: {BytesConversion(f.Length)})"));
         }
 
-        static void ReadConvertedData(Dictionary<FileInfo, string> convertedData)
+        static void ReadConvertedData(Task<Dictionary<FileInfo, string>> convertedData)
         {
-            Console.WriteLine(convertedData.Count());
-            foreach (var kvp in convertedData)
+            foreach (var kvp in convertedData.Result)
             {
                 FileInfo file = kvp.Key;
                 string hashString = kvp.Value;
@@ -108,6 +108,7 @@ namespace File_Deduplicator
                 }
                 Console.WriteLine();
             }
+            await Task.Delay(5000);
         }
 
         static async Task<ConcurrentBag<FileInfo>> ReadDirectoriesAsync(DirectoryInfo[] directories)
@@ -139,31 +140,50 @@ namespace File_Deduplicator
             return allFiles;
         }
 
-        static Dictionary<FileInfo, string> ConvertData(List<FileInfo> filesToConvert) 
+        static async Task<Dictionary<FileInfo, string>> ConvertData(List<FileInfo> filesToConvert) 
         {
             /* 
              * Gathering FileInfo object and the file's hashString to use for comparison later to
              * see if files are duplicates
              */
-            Dictionary<FileInfo, string> fileAndHashString = new Dictionary<FileInfo, string>();
+            ConcurrentDictionary<FileInfo, string> fileAndHashString = new ConcurrentDictionary<FileInfo, string>();
+            ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
-            foreach (FileInfo file in filesToConvert)
+            await Parallel.ForEachAsync(filesToConvert, parOpts, async (file, _) =>
             {
-                // Will need to update the method to accept files > 2GB in size, but for now skip them 
-                if (file.Length > (BYTES_IN_GB * 2)) 
+              // Will need to update the method to accept files > 2GB in size, but for now skip them 
+                if (!(file.Length > (BYTES_IN_GB * 2))) 
                 {
-                    Console.WriteLine("Not adding");
-                    continue;
-                }
-                Console.WriteLine("Adding!");
-                byte[] dataBytes = File.ReadAllBytes(file.FullName);
-                byte[] hashBytes = SHA256.HashData(dataBytes);
-                string hashString = Convert.ToHexString(hashBytes); // COMPARE ON THIS LATER
+                    Console.WriteLine("Adding!");
+                    byte[] dataBytes = File.ReadAllBytes(file.FullName);
+                    byte[] hashBytes = SHA256.HashData(dataBytes);
+                    string hashString = Convert.ToHexString(hashBytes); // COMPARE ON THIS LATER
 
-                fileAndHashString[file] = hashString;
-            }
+                    fileAndHashString[file] = hashString;
+                }             
+            });
             Console.WriteLine("Finished adding files to dictionary");
-            return fileAndHashString;
+            return fileAndHashString.ToDictionary();
+
+
+
+            //foreach (FileInfo file in filesToConvert)
+            //{
+            //    // Will need to update the method to accept files > 2GB in size, but for now skip them 
+            //    if (file.Length > (BYTES_IN_GB * 2)) 
+            //    {
+            //        Console.WriteLine("Not adding");
+            //        continue;
+            //    }
+            //    Console.WriteLine("Adding!");
+            //    byte[] dataBytes = File.ReadAllBytes(file.FullName);
+            //    byte[] hashBytes = SHA256.HashData(dataBytes);
+            //    string hashString = Convert.ToHexString(hashBytes); // COMPARE ON THIS LATER
+
+            //    fileAndHashString[file] = hashString;
+            //}
+            //Console.WriteLine("Finished adding files to dictionary");
+            //return fileAndHashString;
         }
 
 
