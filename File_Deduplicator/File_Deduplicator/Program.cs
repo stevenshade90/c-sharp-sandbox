@@ -1,5 +1,6 @@
 ﻿using File_Deduplicator.Methods;
 using File_Deduplicator.UserClass;
+using System.Collections.Concurrent;
 
 namespace File_Deduplicator
 {
@@ -16,7 +17,7 @@ namespace File_Deduplicator
                 IEnumerable<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.directories); // Contains every file from all directories 
 
                 DisplayMethods.DisplaySectionHeader("Converting Files to Hash Strings");
-                Task<IDictionary<FileInfo, string>> convertedData = ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer);
+                Task<IDictionary<string, ConcurrentBag<FileInfo>>> convertedData = ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer);
 
                 ReadMethods.ReadConvertedData(convertedData);
             }

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace File_Deduplicator.Methods
 {
@@ -10,7 +12,7 @@ namespace File_Deduplicator.Methods
             Console.WriteLine($"********** {text} **********");
         }
 
-        public static async Task GetDriveInfo(DriveInfo[] drives)
+        public static void GetDriveInfo(DriveInfo[] drives)
         {
             foreach (DriveInfo drive in drives)
             {
@@ -30,7 +32,6 @@ namespace File_Deduplicator.Methods
                 }
                 Console.WriteLine();
             }
-            await Task.Delay(5000);
         }
     }
 
@@ -51,20 +52,31 @@ namespace File_Deduplicator.Methods
                 });
             });
             Console.WriteLine("Done processing all files!");
-            Console.WriteLine($"Total Files: {allFiles.Count()}");
+            Console.WriteLine($"Total Files: {allFiles.Count(): #,###}\n");
 
             return allFiles.ToList();
         }
 
-        public static void ReadConvertedData(Task<IDictionary<FileInfo, string>> convertedData)
+        public static void ReadConvertedData(Task<IDictionary<string, ConcurrentBag<FileInfo>>> convertedData)
         {
-            foreach (KeyValuePair<FileInfo, string> kvp in convertedData.Result)
+            foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData.Result)
             {
-                FileInfo file = kvp.Key;
-                string hashString = kvp.Value;
+                string hashString = kvp.Key;
+                ConcurrentBag<FileInfo> files = kvp.Value;
 
-                Console.WriteLine($"File: {file.FullName} -- Hash: {hashString}");
-                Console.WriteLine();
+                if (files.Count <= 1)
+                {
+                    continue; 
+                }
+                else
+                { 
+                    Console.WriteLine($"Hash: {hashString}");
+                    foreach (FileInfo file in files)
+                    {
+                        Console.WriteLine($"\tFile: {file.FullName}");
+                    }
+                    Console.WriteLine();
+                }
             }
         }
     }
@@ -74,28 +86,35 @@ namespace File_Deduplicator.Methods
         private const long BYTES_IN_MB = 1024 * 1024;
         private const long BYTES_IN_GB = 1024 * 1024 * 1024;
 
-        public static async Task<IDictionary<FileInfo, string>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
+        public static async Task<IDictionary<string, ConcurrentBag<FileInfo>>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
         {
-            /* 
-             * Gathering FileInfo object and the file's hashString to use for comparison later to
-             * see if files are duplicates
-             */
-            ConcurrentDictionary<FileInfo, string> fileAndHashString = new ConcurrentDictionary<FileInfo, string>();
+            ConcurrentDictionary<string, ConcurrentBag<FileInfo>> fileAndHashString = new ConcurrentDictionary<string, ConcurrentBag<FileInfo>>();
             ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
             await Parallel.ForEachAsync(filesToConvert, parOpts, async (file, _) =>
             {
-                // Will need to update the method to accept files > 2GB in size, but for now skip them 
-                if (!(file.Length > (BYTES_IN_GB * 2)))
+                try
                 {
-                    /********************************************************************************************
-                     * Is this reading and opening the file, causing the cloud downloading issue? FileStream?   *
-                     ********************************************************************************************/
-                    byte[] dataBytes = File.ReadAllBytes(file.FullName); 
-                    byte[] hashBytes = SHA256.HashData(dataBytes);
-                    string hashString = Convert.ToHexString(hashBytes); // COMPARE ON THIS LATER
+                    using (FileStream fs = File.OpenRead(file.FullName))
+                    {
+                        byte[] hashBytes = SHA256.HashData(fs);
+                        string hashString = Convert.ToHexString(hashBytes);
 
-                    fileAndHashString[file] = hashString;
+                        ConcurrentBag<FileInfo> filebag = fileAndHashString.GetOrAdd(hashString, _ => new ConcurrentBag<FileInfo>());
+                        filebag.Add(file);
+                    }
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Console.WriteLine($"Access denied to file: {file.FullName}. Exception: {ex.Message}");
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"I/O error with file: {file.FullName}. Exception: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unexpected error with file: {file.FullName}. Exception: {ex.Message}");
                 }
             });
             return fileAndHashString.ToDictionary();
