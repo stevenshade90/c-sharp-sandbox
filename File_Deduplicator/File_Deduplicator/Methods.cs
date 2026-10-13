@@ -1,15 +1,15 @@
 ﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace File_Deduplicator.Methods
 {
     sealed class DisplayMethods
     {
-        public static void DisplaySectionHeader(string text)
+        public static void DisplayMessage(string text1, string text2="")
         {
-            Console.WriteLine($"********** {text} **********");
+            Console.WriteLine(string.IsNullOrEmpty(text2) 
+                ? $"********** {text1} **********"
+                : text1 + "\n" + text2);
         }
 
         public static void GetDriveInfo(DriveInfo[] drives)
@@ -44,39 +44,47 @@ namespace File_Deduplicator.Methods
 
             await Parallel.ForEachAsync(directories, parOpts, async (directory, _) =>
             {
-                FileInfo[] files = directory.GetFiles("*", SearchOption.AllDirectories);
-
-                await Parallel.ForEachAsync(files, parOpts, async (file, _) =>
+                try
                 {
-                    allFiles.Add(file);
-                });
+                    FileInfo[] files = directory.GetFiles("*", SearchOption.AllDirectories).ToArray();
+                    await Parallel.ForEachAsync(files, parOpts, async (file, _) =>
+                    {
+                        allFiles.Add(file);
+                    });
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Console.WriteLine($"Access denied to directory: {directory.FullName}. Exception: {ex.Message}");
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"I/O error with directory: {directory.FullName}. Exception: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unexpected error with directory: {directory.FullName}. Exception: {ex.Message}");
+                }
             });
-            Console.WriteLine("Done processing all files!");
-            Console.WriteLine($"Total Files: {allFiles.Count(): #,###}\n");
+            DisplayMethods.DisplayMessage("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
 
             return allFiles.ToList();
         }
 
-        public static void ReadConvertedData(Task<IDictionary<string, ConcurrentBag<FileInfo>>> convertedData)
+        public static void ReadConvertedData(IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
         {
-            foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData.Result)
+            foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
             {
                 string hashString = kvp.Key;
                 ConcurrentBag<FileInfo> files = kvp.Value;
 
-                if (files.Count <= 1)
+                if (files.Count <= 1) continue; 
+                
+                Console.WriteLine($"Hash: {hashString}");
+                foreach (FileInfo file in files)
                 {
-                    continue; 
+                    Console.WriteLine($"\tFile: {file.FullName}");
                 }
-                else
-                { 
-                    Console.WriteLine($"Hash: {hashString}");
-                    foreach (FileInfo file in files)
-                    {
-                        Console.WriteLine($"\tFile: {file.FullName}");
-                    }
-                    Console.WriteLine();
-                }
+                Console.WriteLine();     
             }
         }
     }
@@ -95,6 +103,8 @@ namespace File_Deduplicator.Methods
             {
                 try
                 {
+                    if (file.Attributes.HasFlag(FileAttributes.Offline)) return;
+
                     using (FileStream fs = File.OpenRead(file.FullName))
                     {
                         byte[] hashBytes = SHA256.HashData(fs);

@@ -11,11 +11,6 @@
 
 //List<FileInfo> duplicatesToRemove = new List<FileInfo>(allFilesBag);
 
-//Console.WriteLine("\n");
-//Console.WriteLine("*********************************************");
-//Console.WriteLine("All your files!");
-//Console.WriteLine($"Count: {allFilesBag.Count()}");
-
 //int i = 1;
 //foreach (FileInfo file in allFilesBag.DistinctBy(f => f.Name).OrderBy(f => f.Length))
 //{

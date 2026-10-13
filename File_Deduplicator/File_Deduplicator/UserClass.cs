@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace File_Deduplicator.UserClass
+﻿namespace File_Deduplicator.UserClass
 {
     internal class User : IDisposable
     {
@@ -14,7 +10,7 @@ namespace File_Deduplicator.UserClass
         public User()
         {
             drives = DriveInfo.GetDrives();
-            dir = new DirectoryInfo(@"C:\Users\steve\OneDrive\Desktop\");
+            dir = new DirectoryInfo(@"C:\Users\steve\OneDrive\Desktop\Dorico Files");
             directories = dir.GetDirectories();
         }
 

@@ -10,19 +10,17 @@ namespace File_Deduplicator
         {
             using (User user1 = new User())
             {
-                //DisplayMethods.DisplaySectionHeader("Drive Information");
-                //await DisplayMethods.GetDriveInfo(user1.drives);
-
-                DisplayMethods.DisplaySectionHeader("Gathering All Files from Directories");
+                DisplayMethods.DisplayMessage("Gathering All Files from Directories");
                 IEnumerable<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.directories); // Contains every file from all directories 
 
-                DisplayMethods.DisplaySectionHeader("Converting Files to Hash Strings");
-                Task<IDictionary<string, ConcurrentBag<FileInfo>>> convertedData = ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer);
+                DisplayMethods.DisplayMessage("Converting Files to Hash Strings");
+                IDictionary<string, ConcurrentBag<FileInfo>> convertedData = await ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer);
 
                 ReadMethods.ReadConvertedData(convertedData);
-            }
 
-            Environment.Exit(0);
+                // Next, find duplicates in the convertData and create a method to delete them
+                // Could also have it calculate the .Length of the file object removed to show how much storage was freed up
+            }
         }
     }
 }
