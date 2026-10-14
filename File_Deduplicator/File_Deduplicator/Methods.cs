@@ -32,15 +32,15 @@ namespace File_Deduplicator.Methods
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    Console.WriteLine($"Access denied to directory: {directory.FullName} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"Access denied to directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine($"I/O error with directory: {directory.FullName} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"I/O error with directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error with directory: {directory.FullName} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"Unexpected error with directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
                 }
             });
             DisplayMethods.DisplayMessage("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
@@ -96,29 +96,40 @@ namespace File_Deduplicator.Methods
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    Console.WriteLine($"Access denied to file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConvertTextToSubstring($"Access denied to file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine($"I/O error with file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConvertTextToSubstring($"I/O error with file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error with file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
+                    Console.WriteLine(ConvertTextToSubstring($"Unexpected error with file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
                 }
             });
             return fileAndHashString.ToDictionary();
         }
 
-
-        public static string GenerateFileSubstring(FileInfo file)
+        public static string ConvertTextToSubstring(object parameterValue)
         {
-            return file.FullName.Length >= 20 
-                ? file.FullName.Substring(0, 20) + "..." 
-                : file.FullName;
+            StringBuilder sb = new StringBuilder();
+            
+            if (parameterValue is FileSystemInfo file)
+            {
+                sb.Append(file.FullName.Length >= 30
+                    ? file.FullName.Substring(0, 30) + "..." 
+                    : file.FullName);
+            }
+            else if (parameterValue is string text)
+            {
+                sb.Append(text.Length >= Console.WindowWidth 
+                    ? text.Substring(0, Console.WindowWidth - 3) + "..." 
+                    : text);
+            }
+            return sb.ToString();
         }
 
-        public static string BytesConversion(long bytes)
+        public static string ConvertBytes(long bytes)
         {
             return bytes switch
             {
