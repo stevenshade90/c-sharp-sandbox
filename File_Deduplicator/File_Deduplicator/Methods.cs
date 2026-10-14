@@ -96,18 +96,26 @@ namespace File_Deduplicator.Methods
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    Console.WriteLine($"Access denied to file: {file.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"Access denied to file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine($"I/O error with file: {file.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"I/O error with file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error with file: {file.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"Unexpected error with file: {GenerateFileSubstring(file)} -- Exception: {ex.Message}");
                 }
             });
             return fileAndHashString.ToDictionary();
+        }
+
+
+        public static string GenerateFileSubstring(FileInfo file)
+        {
+            return file.FullName.Length >= 20 
+                ? file.FullName.Substring(0, 20) + "..." 
+                : file.FullName;
         }
 
         public static string BytesConversion(long bytes)
