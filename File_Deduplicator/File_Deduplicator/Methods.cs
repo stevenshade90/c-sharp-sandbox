@@ -11,28 +11,6 @@ namespace File_Deduplicator.Methods
                 ? $"********** {text1} **********"
                 : text1 + "\n" + text2);
         }
-
-        public static void GetDriveInfo(DriveInfo[] drives)
-        {
-            foreach (DriveInfo drive in drives)
-            {
-                Console.WriteLine($"Drive: {drive.Name}");
-                Console.WriteLine($"Drive Type: {drive.DriveType}");
-
-                if (drive.IsReady)
-                {
-                    Console.WriteLine($"\tVolume Label: {drive.VolumeLabel}");
-                    Console.WriteLine($"\tFile System: {drive.DriveFormat}");
-                    Console.WriteLine($"\tAvailable Space: {drive.AvailableFreeSpace / Math.Pow(1024, 3):F2} GB");
-                    Console.WriteLine($"\tTotal Size: {drive.TotalSize / Math.Pow(1024, 3):F2} GB");
-                }
-                else
-                {
-                    Console.WriteLine("Drive is not ready.");
-                }
-                Console.WriteLine();
-            }
-        }
     }
 
     sealed class ReadMethods
@@ -54,18 +32,19 @@ namespace File_Deduplicator.Methods
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    Console.WriteLine($"Access denied to directory: {directory.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"Access denied to directory: {directory.FullName} -- Exception: {ex.Message}");
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine($"I/O error with directory: {directory.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"I/O error with directory: {directory.FullName} -- Exception: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unexpected error with directory: {directory.FullName}. Exception: {ex.Message}");
+                    Console.WriteLine($"Unexpected error with directory: {directory.FullName} -- Exception: {ex.Message}");
                 }
             });
             DisplayMethods.DisplayMessage("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
+            await Task.Delay(3000);
 
             return allFiles.ToList();
         }
@@ -104,6 +83,7 @@ namespace File_Deduplicator.Methods
                 try
                 {
                     if (file.Attributes.HasFlag(FileAttributes.Offline)) return;
+                    if (file.GetType() != typeof(FileInfo)) return;
 
                     using (FileStream fs = File.OpenRead(file.FullName))
                     {

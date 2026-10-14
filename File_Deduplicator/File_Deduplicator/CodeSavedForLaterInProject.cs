@@ -1,11 +1,6 @@
 ﻿// CONSIDERATION - What if it is a cloud file that is being opened? Will it mass download files? Confirm underlying type before adding the file
 // from the directory? Or, maybe stream the file?
 
-/*
- *
- * to continue from here
- * 
- */
 
 //List<FileInfo> distinctFiles = new List<FileInfo>(); // Contains only the distinct files from allFiles
 
