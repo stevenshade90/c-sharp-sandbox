@@ -1,15 +1,26 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace File_Deduplicator.Methods
 {
     sealed class DisplayMethods
     {
-        public static void DisplayMessage(string text1, string text2="")
+        public static void DisplayMessage(string text1, string text2 = "")
         {
-            Console.WriteLine(string.IsNullOrEmpty(text2) 
+            Console.WriteLine(string.IsNullOrEmpty(text2)
                 ? $"********** {text1} **********"
                 : text1 + "\n" + text2);
+        }
+
+        public static string DisplayProcessedException(Exception ex, string additionalInfo)
+        {
+            return ex switch
+            {
+                UnauthorizedAccessException => ConversionMethods.ConvertTextToSubstring($"Access denied: {additionalInfo}"),
+                IOException => ConversionMethods.ConvertTextToSubstring($"I/O Error: {additionalInfo}"),
+                _ => ConversionMethods.ConvertTextToSubstring($"Unexpected error: {additionalInfo}")
+            };
         }
     }
 
@@ -30,17 +41,10 @@ namespace File_Deduplicator.Methods
                         allFiles.Add(file);
                     });
                 }
-                catch (UnauthorizedAccessException ex)
-                {
-                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"Access denied to directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"I/O error with directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
-                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ConversionMethods.ConvertTextToSubstring($"Unexpected error with directory: {ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}"));
+                    string message = $"{ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}";
+                    Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
                 }
             });
             DisplayMethods.DisplayMessage("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
@@ -94,17 +98,10 @@ namespace File_Deduplicator.Methods
                         filebag.Add(file);
                     }
                 }
-                catch (UnauthorizedAccessException ex)
-                {
-                    Console.WriteLine(ConvertTextToSubstring($"Access denied to file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine(ConvertTextToSubstring($"I/O error with file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
-                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ConvertTextToSubstring($"Unexpected error with file: {ConvertTextToSubstring(file)} -- Exception: {ex.Message}"));
+                    string message = $"{ConversionMethods.ConvertTextToSubstring(file)} -- Exception: {ex.Message}";
+                    Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
                 }
             });
             return fileAndHashString.ToDictionary();
