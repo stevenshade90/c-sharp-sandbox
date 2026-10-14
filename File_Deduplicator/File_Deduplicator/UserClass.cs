@@ -2,21 +2,21 @@
 {
     internal class User : IDisposable
     {
-        public DriveInfo[] drives { get; private set; }
+        public DriveInfo[] Drives { get; private set; }
 
-        public DirectoryInfo dir { get; private set; } 
-        public DirectoryInfo[] directories { get; private set; } 
+        public DirectoryInfo PrimaryDirectory { get; private set; } 
+        public DirectoryInfo[] Directories { get; private set; } 
 
         public User()
         {
-            drives = DriveInfo.GetDrives();
-            dir = new DirectoryInfo(SetDirectoryInfo());
-            directories = dir.GetDirectories();
+            Drives = DriveInfo.GetDrives();
+            PrimaryDirectory = new DirectoryInfo(SetDirectoryInfo());
+            Directories = PrimaryDirectory.GetDirectories();
         }
 
         public void GetDriveInfo()
         {
-            foreach (DriveInfo drive in this.drives)
+            foreach (DriveInfo drive in this.Drives)
             {
                 Console.WriteLine($"Drive: {drive.Name}");
                 Console.WriteLine($"Drive Type: {drive.DriveType}");
@@ -40,7 +40,7 @@
         {
             while (true)
             {
-                Console.Write("Enter the directory path to scan for files:");
+                Console.Write("Enter the directory path to scan for files: ");
                 string? inputPath = Console.ReadLine();
                 if (Directory.Exists(inputPath))
                 {

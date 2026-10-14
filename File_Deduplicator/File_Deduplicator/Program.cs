@@ -11,7 +11,7 @@ namespace File_Deduplicator
             using (User user1 = new User())
             {
                 DisplayMethods.DisplayMessage("Gathering All Files from Directories");
-                IEnumerable<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.directories); // Contains every file from all directories 
+                IEnumerable<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.Directories); // Contains every file from all directories 
 
                 DisplayMethods.DisplayMessage("Converting Files to Hash Strings");
                 IDictionary<string, ConcurrentBag<FileInfo>> convertedData = await ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer);
