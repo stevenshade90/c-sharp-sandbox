@@ -60,14 +60,14 @@ namespace File_Deduplicator.Methods
                 string hashString = kvp.Key;
                 ConcurrentBag<FileInfo> files = kvp.Value;
 
-                if (files.Count <= 1) continue; 
-                
+                if (files.Count <= 1) continue;
+
                 Console.WriteLine($"Hash: {hashString}");
                 foreach (FileInfo file in files)
                 {
                     Console.WriteLine($"\tFile: {file.FullName}");
                 }
-                Console.WriteLine();     
+                Console.WriteLine();
             }
         }
     }
@@ -110,17 +110,17 @@ namespace File_Deduplicator.Methods
         public static string ConvertTextToSubstring(object parameterValue)
         {
             StringBuilder sb = new StringBuilder();
-            
+
             if (parameterValue is FileSystemInfo file)
             {
                 sb.Append(file.FullName.Length >= 30
-                    ? file.FullName.Substring(0, 30) + "..." 
+                    ? file.FullName.Substring(0, 30) + "..."
                     : file.FullName);
             }
             else if (parameterValue is string text)
             {
-                sb.Append(text.Length >= Console.WindowWidth 
-                    ? text.Substring(0, Console.WindowWidth - 3) + "..." 
+                sb.Append(text.Length >= Console.WindowWidth
+                    ? text.Substring(0, Console.WindowWidth - 3) + "..."
                     : text);
             }
             return sb.ToString();
@@ -135,5 +135,9 @@ namespace File_Deduplicator.Methods
                 _ => $"{bytes:#,###} bytes"
             };
         }
+    }
+
+    sealed class DeleteMethods
+    {
     }
 }

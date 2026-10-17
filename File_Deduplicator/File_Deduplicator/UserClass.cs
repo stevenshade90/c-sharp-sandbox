@@ -4,8 +4,8 @@
     {
         public DriveInfo[] Drives { get; private set; }
 
-        public DirectoryInfo PrimaryDirectory { get; private set; } 
-        public DirectoryInfo[] Directories { get; private set; } 
+        public DirectoryInfo PrimaryDirectory { get; private set; }
+        public DirectoryInfo[] Directories { get; private set; }
 
         public User()
         {
@@ -42,6 +42,7 @@
             {
                 Console.Write("Enter the directory path to scan for files: ");
                 string? inputPath = Console.ReadLine();
+
                 if (Directory.Exists(inputPath))
                 {
                     Console.WriteLine("Directory found!");
