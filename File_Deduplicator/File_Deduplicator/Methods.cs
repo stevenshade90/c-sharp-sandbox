@@ -170,5 +170,54 @@ namespace File_Deduplicator.Methods
 
     sealed class DeleteMethods
     {
+        public static List<FileInfo> RemoveDuplicatesFromData(IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
+        {
+            List<FileInfo> duplicateFiles = new List<FileInfo>();
+            foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
+            {
+                var duplicates = kvp.Value.Skip(1).ToList();
+                duplicates.ForEach(f => duplicateFiles.Add(f));
+            }
+            DisplayMethods.DisplayMessageGeneric<IEnumerable<FileInfo>>(duplicateFiles);
+
+            return duplicateFiles;
+        }
+
+        public static bool DeleteConfirmation()
+        {
+            Console.Write("Enter Y to delete duplicate files: ");
+            string userResponse = Console.ReadLine();
+            Console.WriteLine();
+
+            return userResponse.Equals("Y", StringComparison.OrdinalIgnoreCase)
+                ? true
+                : false;
+        }
+
+        public static void DeleteDuplicates(IList<FileInfo> duplicateFiles, bool confirmation)
+        {
+            if (confirmation)
+            {
+                foreach (FileInfo file in duplicateFiles)
+                {
+                    try
+                    {
+                        file.Delete();
+                        Console.WriteLine($"\tDeleted: {file.FullName}");
+                    }
+                    catch (Exception ex)
+                    {
+                        string message = $"{ConversionMethods.ConvertTextToSubstring(file)} -- Exception: {ex.Message}";
+                        Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
+                    }
+                }
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("\tDeletion canceled by user.");
+                Environment.Exit(0);
+            }
+        }
     }
 }
