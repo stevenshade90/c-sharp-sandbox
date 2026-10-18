@@ -41,6 +41,18 @@ namespace File_Deduplicator.UserClass
             }
         }
 
+        public string SetCurrentAvailableStorage()
+        {
+            foreach (DriveInfo drive in this.Drives)
+            {
+                if (drive.Name == "C:\\")
+                {
+                    return drive.AvailableFreeSpace.ToString();
+                }
+            }
+            return "0";
+        }
+
         public string SetDirectoryInfo()
         {
             while (true)
