@@ -45,7 +45,7 @@
 
                 if (Directory.Exists(inputPath))
                 {
-                    Console.WriteLine("Directory found!");
+                    Console.WriteLine("Directory found!\n");
                     return inputPath;
                 }
                 else
@@ -57,8 +57,6 @@
 
         public void Dispose()
         {
-            // Not needed for DriveInfo and DirectoryInfo
-            // May use for FileStream later
             Console.WriteLine("Resources disposed!");
         }
     }
