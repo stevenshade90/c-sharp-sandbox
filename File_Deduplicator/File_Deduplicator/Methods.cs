@@ -6,11 +6,44 @@ namespace File_Deduplicator.Methods
 {
     sealed class DisplayMethods
     {
-        public static void DisplayMessage(string text1, string text2 = "")
+        public static void DisplayMessageGeneric<T>(T value1, string text2 = "")
         {
-            Console.WriteLine(string.IsNullOrEmpty(text2)
-                ? $"********** {text1} **********"
-                : text1 + "\n" + text2);
+            if (value1 is List<FileInfo> listValues)
+            {
+                if (listValues.Count == 0)
+                {
+                    Console.WriteLine("\tNo duplicate files found.");
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    listValues.ForEach(f => Console.WriteLine($"\t{f.FullName}"));
+                }
+            }
+            else if (value1 is IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
+            {
+                foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
+                {
+                    string hashString = kvp.Key;
+                    ConcurrentBag<FileInfo> files = kvp.Value;
+
+                    if (files.Count <= 1) continue;
+
+                    Console.WriteLine($"Hash: {hashString}");
+                    foreach (FileInfo file in files)
+                    {
+                        Console.WriteLine($"\tFile: {file.FullName}");
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine(convertedData.Count());
+            }
+            else if (value1 is string text1)
+            {
+                Console.WriteLine(string.IsNullOrEmpty(text2)
+                    ? $"********** {text1} **********"
+                    : $"\t{text1}\n\t{text2}");
+            }
         }
 
         public static string DisplayProcessedException(Exception ex, string additionalInfo)
@@ -47,28 +80,10 @@ namespace File_Deduplicator.Methods
                     Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
                 }
             });
-            DisplayMethods.DisplayMessage("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
+            DisplayMethods.DisplayMessageGeneric("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
             await Task.Delay(3000);
 
             return allFiles.ToList();
-        }
-
-        public static void ReadConvertedData(IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
-        {
-            foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
-            {
-                string hashString = kvp.Key;
-                ConcurrentBag<FileInfo> files = kvp.Value;
-
-                if (files.Count <= 1) continue;
-
-                Console.WriteLine($"Hash: {hashString}");
-                foreach (FileInfo file in files)
-                {
-                    Console.WriteLine($"\tFile: {file.FullName}");
-                }
-                Console.WriteLine();
-            }
         }
     }
 
@@ -104,13 +119,13 @@ namespace File_Deduplicator.Methods
                     Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
                 }
             });
+            Console.WriteLine("\tFinished converting files to Hash Strings\n");
             return fileAndHashString.ToDictionary();
         }
 
-        public static string ConvertTextToSubstring(object parameterValue)
+        public static string ConvertTextToSubstring<T>(T parameterValue)
         {
             StringBuilder sb = new StringBuilder();
-
             if (parameterValue is FileSystemInfo file)
             {
                 sb.Append(file.FullName.Length >= 30
