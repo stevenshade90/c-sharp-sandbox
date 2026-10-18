@@ -25,8 +25,8 @@
                 {
                     Console.WriteLine($"\tVolume Label: {drive.VolumeLabel}");
                     Console.WriteLine($"\tFile System: {drive.DriveFormat}");
-                    Console.WriteLine($"\tAvailable Space: {drive.AvailableFreeSpace / Math.Pow(1024, 3):F2} GB");
-                    Console.WriteLine($"\tTotal Size: {drive.TotalSize / Math.Pow(1024, 3):F2} GB");
+                    Console.WriteLine($"\tAvailable Space: {ConversionMethods.ConvertBytes(drive.AvailableFreeSpace)}");
+                    Console.WriteLine($"\tTotal Size: {ConversionMethods.ConvertBytes(drive.TotalSize)}");
                 }
                 else
                 {

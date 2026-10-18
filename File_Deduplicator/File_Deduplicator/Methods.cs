@@ -161,8 +161,8 @@ namespace File_Deduplicator.Methods
         {
             return bytes switch
             {
-                >= BYTES_IN_GB => $"{bytes / (double)BYTES_IN_GB:F2} GB",
-                >= BYTES_IN_MB => $"{bytes / (double)BYTES_IN_MB:F2} MB",
+                >= BYTES_IN_GB => $"{bytes / (double)BYTES_IN_GB:F4} GB",
+                >= BYTES_IN_MB => $"{bytes / (double)BYTES_IN_MB:F4} MB",
                 _ => $"{bytes:#,###} bytes"
             };
         }
