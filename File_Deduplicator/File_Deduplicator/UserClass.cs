@@ -1,17 +1,22 @@
-﻿namespace File_Deduplicator.UserClass
+﻿using File_Deduplicator.Methods;
+
+namespace File_Deduplicator.UserClass
 {
     internal class User : IDisposable
     {
         public DriveInfo[] Drives { get; private set; }
-
-        public DirectoryInfo PrimaryDirectory { get; private set; }
         public DirectoryInfo[] Directories { get; private set; }
+        public DirectoryInfo PrimaryDirectory { get; private set; }
+
+        public string CurrentAvailableStorage { get; init; }
+        public string StorageFreedUp { get; set; } 
 
         public User()
         {
             Drives = DriveInfo.GetDrives();
             PrimaryDirectory = new DirectoryInfo(SetDirectoryInfo());
             Directories = PrimaryDirectory.GetDirectories();
+            CurrentAvailableStorage = SetCurrentAvailableStorage();
         }
 
         public void GetDriveInfo()
