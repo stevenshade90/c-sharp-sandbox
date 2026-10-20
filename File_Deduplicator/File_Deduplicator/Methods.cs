@@ -223,4 +223,49 @@ namespace File_Deduplicator.Methods
             }
         }
     }
+
+    sealed class SerializationMethods
+    {
+        public static string FileName { get; } = "user_data.json";
+        public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions() 
+        { 
+            IncludeFields = true, WriteIndented = true, PropertyNamingPolicy = null, PropertyNameCaseInsensitive = true 
+        };
+
+        public static void SerializeUserDataAsJson<T>(T userData)
+        {
+            Console.WriteLine($"Saving file as: {FileName}");
+
+            try
+            {
+                File.WriteAllText(FileName, System.Text.Json.JsonSerializer.Serialize(userData, Options));
+                Console.WriteLine("Saved user info!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"File not saved: {ex.Message}");
+            }
+        }
+
+        public static T DeserializeUserDataAsJson<T>()
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<T>(File.ReadAllText(FileName), Options);
+        }
+
+        public static User FileExistCheck()
+        {
+            User userInfo;
+            if (File.Exists(FileName))
+            {
+                Console.WriteLine("Found user data!\n");
+                userInfo = DeserializeUserDataAsJson<User>();
+            }
+            else
+            {
+                Console.WriteLine("No user data found\n");
+                userInfo = new User();
+            }
+            return userInfo;
+        }
+    }
 }
