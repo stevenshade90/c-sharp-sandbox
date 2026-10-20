@@ -10,17 +10,17 @@ namespace File_Deduplicator.Methods
     {
         public static void DisplayMessageGeneric<T>(T value1, string text2 = "")
         {
-            if (value1 is IEnumerable<FileInfo> listValues)
+            if (value1 is IEnumerable<FileInfo> duplicateFiles)
             {
-                if (!listValues.Any())
+                if (!duplicateFiles.Any())
                 {
                     Console.WriteLine("\tNo duplicate files found \n");
                 }
                 else
                 {
-                    foreach (var f in listValues)
+                    foreach (var file in duplicateFiles)
                     {
-                        Console.WriteLine($"\t{f.FullName}");
+                        Console.WriteLine($"\t{file.FullName}");
                     }
                 }
             }
@@ -111,7 +111,7 @@ namespace File_Deduplicator.Methods
                     Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
                 }
             });
-            DisplayMethods.DisplayMessageGeneric("Done processing all files!", $"Total Files: {allFiles.Count(): #,###}\n");
+            DisplayMethods.DisplayMessageGeneric("Done processing all files!", $"Total Files: {allFiles.Count(): #,##0}\n");
             await Task.Delay(3000);
 
             return allFiles.ToList();
@@ -219,8 +219,7 @@ namespace File_Deduplicator.Methods
             }
             else
             {
-                Console.WriteLine("\tDeletion canceled by user.");
-                Environment.Exit(0);
+                Console.WriteLine("\tDeletion canceled by user");
             }
         }
     }

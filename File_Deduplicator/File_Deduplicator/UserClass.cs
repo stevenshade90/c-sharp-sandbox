@@ -52,6 +52,12 @@ namespace File_Deduplicator.UserClass
             }
         }
 
+        public void ViewCumulativeStorageFreed()
+        {
+            Console.WriteLine($"Cumulative session storage freed: {ConversionMethods.ConvertBytes(SessionStorageFreed)}");
+            Console.WriteLine($"Lifetime storage freed: {ConversionMethods.ConvertBytes(LifetimeStorageFreed)}\n");
+        }
+
         public string SetDirectoryInfo()
         {
             while (true)
