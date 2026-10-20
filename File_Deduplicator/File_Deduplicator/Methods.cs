@@ -198,6 +198,25 @@ namespace File_Deduplicator.Methods
             return duplicateFiles;
         }
 
+        public static void DeleteCheck(IEnumerable<FileInfo> allFiles, User user)
+        {
+            if (allFiles.Any())
+            {
+                long storageFreed = allFiles.Sum(file => file.Length);
+                bool b = DisplayMethods.DisplayUserConfirmation("Enter Y to delete duplicate files: ");
+                DeleteMethods.DeleteDuplicates(allFiles, b);
+
+                if (b)
+                {
+                    user.SessionStorageFreed += storageFreed;
+                    user.LifetimeStorageFreed += storageFreed;
+
+                    DisplayMethods.DisplayMessageGeneric("Duplicate Files Deleted");
+                    Console.WriteLine($"Storage freed from current directory: {ConversionMethods.ConvertBytes(storageFreed)}\n");
+                }
+            }
+        }
+
         public static void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)
         {
             if (confirmation)
