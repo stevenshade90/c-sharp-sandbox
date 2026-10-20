@@ -77,6 +77,22 @@ namespace File_Deduplicator.UserClass
             }
         }
 
+        public static void DeleteCurrentUser()
+        {
+            try
+            {
+                if (File.Exists(SerializationMethods.FileName))
+                {
+                    File.Delete(SerializationMethods.FileName);
+                    Console.WriteLine("User information deleted");
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Unable to delete user");
+            }
+        }
+
         public void Dispose()
         {
             Console.WriteLine("Resources disposed!");
