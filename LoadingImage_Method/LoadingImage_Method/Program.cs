@@ -1,4 +1,4 @@
-﻿private void LoadingImage(Task awaitingTask)
+﻿public void LoadingImage(Task awaitingTask)
 {
     //Loading image that will only display as the csv processing task is running
     int iterator = 1;

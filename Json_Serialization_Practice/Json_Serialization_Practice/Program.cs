@@ -14,20 +14,29 @@ namespace Json_Serialization_Practice
                 WriteIndented = true
             };
 
-            Person p1 = new Person() { FirstName = "Steve", LastName = "Shade", Profession = new string[] { "Chef", "Landscaper" }, Age = 36 };
-            p1.personPet.PetName = "Cookie";
-            p1.personPet.PetBreed = "Golden Retriever";
-            p1.personPet.PetAge = 3;
+            //Person p1 = new Person() { FirstName = "Steve", LastName = "Shade", Profession = new string[] { "Chef", "Landscaper" }, Age = 36 };
+            //p1.personPet.PetName = "Cookie";
+            //p1.personPet.PetBreed = "Golden Retriever";
+            //p1.personPet.PetAge = 3;
 
-            SaveAsJson<Person>(p1, options, "");
-            Console.WriteLine("Serialized p1!");
-            Console.WriteLine($"p1 ToString(): {p1.ToString()}");
-            Console.WriteLine();
-           
+            //SaveAsJson<Person>(p1, options, "");
+            //Console.WriteLine("Serialized p1!");
+            //Console.WriteLine($"p1 ToString(): {p1.ToString()}");
+            //Console.WriteLine();
 
-            Console.WriteLine("Deserializing p1!");
-            Person savedPerson = ReadFromJson<Person>(options, "");
-            Console.WriteLine($"savedPerson ToString(): {savedPerson.ToString()}");
+
+            //Console.WriteLine("Deserializing p1!");
+            //Person savedPerson = ReadFromJson<Person>(options, "");
+            //Console.WriteLine($"savedPerson ToString(): {savedPerson.ToString()}");
+
+            Pet pet1 = new Pet() { PetName = "Cookie", PetBreed = "Golden Retriever", PetAge = 5 };
+            SaveAsJson<Pet>(pet1, options, @"C:\Users\steve\OneDrive\Desktop\PetData.json");
+            Console.WriteLine("Serialized!");
+            Console.WriteLine(pet1.ToString());
+
+            Pet pet2 = ReadFromJson<Pet>(options, @"C:\Users\steve\OneDrive\Desktop\PersonData.json");
+            Console.WriteLine("Deserialized!");
+            Console.WriteLine(pet1.ToString());
         }
 
         static void SaveAsJson<T>(T objGraph, JsonSerializerOptions options, string fileName)
@@ -67,9 +76,11 @@ namespace Json_Serialization_Practice
     }
 
     public class Pet
-    { 
+    {
         public string PetName { get; set; }
         public string PetBreed { get; set; }
         public int PetAge { get; set; }
+
+        public string ToString() => $"PetName: {PetName} -- PetBreed: {PetBreed} -- PetAge: {PetAge}";
     }
 }
