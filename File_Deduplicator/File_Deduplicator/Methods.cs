@@ -1,6 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using File_Deduplicator.UserClass;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace File_Deduplicator.Methods
 {
@@ -12,8 +14,7 @@ namespace File_Deduplicator.Methods
             {
                 if (!listValues.Any())
                 {
-                    Console.WriteLine("\tNo duplicate files found.");
-                    Environment.Exit(0);
+                    Console.WriteLine("\tNo duplicate files found \n");
                 }
                 else
                 {
@@ -47,6 +48,17 @@ namespace File_Deduplicator.Methods
                     ? $"********** {text1} **********"
                     : $"\t{text1}\n\t{text2}");
             }
+        }
+
+        public static bool DisplayUserConfirmation(string text)
+        {
+            Console.Write(text);
+            string userResponse = Console.ReadLine();
+            Console.WriteLine();
+
+            return userResponse.Equals("Y", StringComparison.OrdinalIgnoreCase)
+                ? true
+                : false;
         }
 
         public static string DisplayProcessedException(Exception ex, string additionalInfo)
@@ -166,7 +178,7 @@ namespace File_Deduplicator.Methods
             {
                 >= BYTES_IN_GB => $"{bytes / (double)BYTES_IN_GB:F4} GB",
                 >= BYTES_IN_MB => $"{bytes / (double)BYTES_IN_MB:F4} MB",
-                _ => $"{bytes:#,###} bytes"
+                _ => $"{bytes:#,##0} bytes"
             };
         }
     }
@@ -184,17 +196,6 @@ namespace File_Deduplicator.Methods
             DisplayMethods.DisplayMessageGeneric<List<FileInfo>>(duplicateFiles);
 
             return duplicateFiles;
-        }
-
-        public static bool DeleteConfirmation()
-        {
-            Console.Write("Enter Y to delete duplicate files: ");
-            string userResponse = Console.ReadLine();
-            Console.WriteLine();
-
-            return userResponse.Equals("Y", StringComparison.OrdinalIgnoreCase)
-                ? true
-                : false;
         }
 
         public static void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)

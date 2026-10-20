@@ -1,22 +1,33 @@
 ﻿using File_Deduplicator.Methods;
+using System.Text.Json.Serialization;
 
 namespace File_Deduplicator.UserClass
 {
     internal class User : IDisposable
     {
+        [JsonIgnore]
         public DriveInfo[] Drives { get; private set; }
-        public DirectoryInfo[] Directories { get; private set; }
-        public DirectoryInfo PrimaryDirectory { get; private set; }
+        [JsonIgnore]
+        public DirectoryInfo[] Directories { get; set; }
+        [JsonIgnore]
+        public DirectoryInfo PrimaryDirectory { get; set; }
 
-        public string CurrentAvailableStorage { get; init; }
-        public string StorageFreedUp { get; set; } 
+        public long LifetimeStorageFreed { get; set; }
+        [JsonIgnore]
+        public long SessionStorageFreed { get; set; }
 
         public User()
         {
             Drives = DriveInfo.GetDrives();
+        }
+
+        public void SetPrimaryDirectoryAndDirectories()
+        {
+            PrimaryDirectory = null;
+            Directories = null;
+
             PrimaryDirectory = new DirectoryInfo(SetDirectoryInfo());
             Directories = PrimaryDirectory.GetDirectories();
-            CurrentAvailableStorage = SetCurrentAvailableStorage();
         }
 
         public void GetDriveInfo()
@@ -39,18 +50,6 @@ namespace File_Deduplicator.UserClass
                 }
                 Console.WriteLine();
             }
-        }
-
-        public string SetCurrentAvailableStorage()
-        {
-            foreach (DriveInfo drive in this.Drives)
-            {
-                if (drive.Name == "C:\\")
-                {
-                    return drive.AvailableFreeSpace.ToString();
-                }
-            }
-            return "0";
         }
 
         public string SetDirectoryInfo()
