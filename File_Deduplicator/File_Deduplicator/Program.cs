@@ -11,10 +11,10 @@ namespace File_Deduplicator
             using (User user1 = new User())
             {
                 DisplayMethods.DisplayMessageGeneric("Gathering All Files from Directories");
-                IList<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.Directories); // Contains every file from all directories
+                List<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user1.Directories); // Contains every file from all directories
 
                 DisplayMethods.DisplayMessageGeneric("Converting Files to Hash Strings");
-                IDictionary<string, ConcurrentBag<FileInfo>> convertedData =  await ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer); // Contains all files with a HashString associated to it
+                Dictionary<string, ConcurrentBag<FileInfo>> convertedData =  await ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer); // Contains all files with a HashString associated to it
 
                 DisplayMethods.DisplayMessageGeneric("Displaying Duplicate Files");
                 List<FileInfo> duplicateFiles = DeleteMethods.RemoveDuplicatesFromData(convertedData);

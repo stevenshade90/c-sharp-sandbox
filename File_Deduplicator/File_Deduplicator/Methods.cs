@@ -8,19 +8,22 @@ namespace File_Deduplicator.Methods
     {
         public static void DisplayMessageGeneric<T>(T value1, string text2 = "")
         {
-            if (value1 is List<FileInfo> listValues)
+            if (value1 is IEnumerable<FileInfo> listValues)
             {
-                if (listValues.Count == 0)
+                if (!listValues.Any())
                 {
                     Console.WriteLine("\tNo duplicate files found.");
                     Environment.Exit(0);
                 }
                 else
                 {
-                    listValues.ForEach(f => Console.WriteLine($"\t{f.FullName}"));
+                    foreach (var f in listValues)
+                    {
+                        Console.WriteLine($"\t{f.FullName}");
+                    }
                 }
             }
-            else if (value1 is IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
+            else if (value1 is IEnumerable<KeyValuePair<string, ConcurrentBag<FileInfo>>> convertedData)
             {
                 foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
                 {
@@ -75,7 +78,7 @@ namespace File_Deduplicator.Methods
 
     sealed class ReadMethods
     {
-        public static async Task<IList<FileInfo>> ReadDirectoriesAsync(DirectoryInfo[] directories)
+        public static async Task<List<FileInfo>> ReadDirectoriesAsync(IEnumerable<DirectoryInfo> directories)
         {
             ConcurrentBag<FileInfo> allFiles = new ConcurrentBag<FileInfo>();
             ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
@@ -108,7 +111,7 @@ namespace File_Deduplicator.Methods
         private const long BYTES_IN_MB = 1024 * 1024;
         private const long BYTES_IN_GB = 1024 * 1024 * 1024;
 
-        public static async Task<IDictionary<string, ConcurrentBag<FileInfo>>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
+        public static async Task<Dictionary<string, ConcurrentBag<FileInfo>>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
         {
             ConcurrentDictionary<string, ConcurrentBag<FileInfo>> fileAndHashString = new ConcurrentDictionary<string, ConcurrentBag<FileInfo>>();
             ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
@@ -170,15 +173,15 @@ namespace File_Deduplicator.Methods
 
     sealed class DeleteMethods
     {
-        public static List<FileInfo> RemoveDuplicatesFromData(IDictionary<string, ConcurrentBag<FileInfo>> convertedData)
+        public static List<FileInfo> RemoveDuplicatesFromData(IEnumerable<KeyValuePair<string, ConcurrentBag<FileInfo>>> convertedData)
         {
             List<FileInfo> duplicateFiles = new List<FileInfo>();
             foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
             {
-                var duplicates = kvp.Value.Skip(1).ToList();
+                var duplicates = kvp.Value.OrderBy(f => f.CreationTime).Skip(1).ToList();
                 duplicates.ForEach(f => duplicateFiles.Add(f));
             }
-            DisplayMethods.DisplayMessageGeneric<IEnumerable<FileInfo>>(duplicateFiles);
+            DisplayMethods.DisplayMessageGeneric<List<FileInfo>>(duplicateFiles);
 
             return duplicateFiles;
         }
@@ -194,7 +197,7 @@ namespace File_Deduplicator.Methods
                 : false;
         }
 
-        public static void DeleteDuplicates(IList<FileInfo> duplicateFiles, bool confirmation)
+        public static void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)
         {
             if (confirmation)
             {
