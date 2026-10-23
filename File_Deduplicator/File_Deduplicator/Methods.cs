@@ -1,4 +1,5 @@
 ﻿using File_Deduplicator.UserClass;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,8 +7,15 @@ using System.Text.Json;
 
 namespace File_Deduplicator.Methods
 {
-    sealed class DisplayMethods
+    internal class DisplayMethods
     {
+        private readonly ILogger<DisplayMethods> _logger;
+
+        public DisplayMethods(ILogger<DisplayMethods> logger)
+        {
+            _logger = logger;
+        }
+
         public static void DisplayMessageGeneric<T>(T value1, string text2 = "")
         {
             if (value1 is IEnumerable<FileInfo> duplicateFiles)
@@ -53,7 +61,7 @@ namespace File_Deduplicator.Methods
         public static bool DisplayUserConfirmation(string text)
         {
             Console.Write(text);
-            string userResponse = Console.ReadLine();
+            string? userResponse = Console.ReadLine();
             Console.WriteLine();
 
             return userResponse.Equals("Y", StringComparison.OrdinalIgnoreCase)
@@ -88,8 +96,15 @@ namespace File_Deduplicator.Methods
         }
     }
 
-    sealed class ReadMethods
+    internal class ReadMethods
     {
+        private readonly ILogger<ReadMethods> _logger;
+
+        public ReadMethods(ILogger<ReadMethods> logger)
+        {
+            _logger = logger;
+        }
+
         public static async Task<List<FileInfo>> ReadDirectoriesAsync(IEnumerable<DirectoryInfo> directories)
         {
             ConcurrentBag<FileInfo> allFiles = new ConcurrentBag<FileInfo>();
@@ -118,8 +133,15 @@ namespace File_Deduplicator.Methods
         }
     }
 
-    sealed class ConversionMethods
+    internal class ConversionMethods
     {
+        private readonly ILogger<ConversionMethods> _logger;
+
+        public ConversionMethods(ILogger<ConversionMethods> logger)
+        {
+            _logger = logger;
+        }
+
         private const long BYTES_IN_MB = 1024 * 1024;
         private const long BYTES_IN_GB = 1024 * 1024 * 1024;
 
@@ -183,8 +205,15 @@ namespace File_Deduplicator.Methods
         }
     }
 
-    sealed class DeleteMethods
+    internal class DeleteMethods
     {
+        private readonly ILogger<DeleteMethods> _logger;
+
+        public DeleteMethods(ILogger<DeleteMethods> logger)
+        {
+            _logger = logger;
+        }
+
         public static List<FileInfo> RemoveDuplicatesFromData(IEnumerable<KeyValuePair<string, ConcurrentBag<FileInfo>>> convertedData)
         {
             List<FileInfo> duplicateFiles = new List<FileInfo>();
@@ -243,8 +272,15 @@ namespace File_Deduplicator.Methods
         }
     }
 
-    sealed class SerializationMethods
+    internal class SerializationMethods
     {
+        private readonly ILogger<SerializationMethods> _logger;
+
+        public SerializationMethods(ILogger<SerializationMethods> logger)
+        {
+            _logger = logger;
+        }
+
         public static string FileName { get; } = "user_data.json";
         public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions() 
         { 
