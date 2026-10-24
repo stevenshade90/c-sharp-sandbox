@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 
 namespace File_Deduplicator
 {
-    internal class ProgramOrchestrator
+    public class ProgramOrchestrator
     {
         private readonly ILogger<ProgramOrchestrator> _logger;
 
@@ -13,7 +13,7 @@ namespace File_Deduplicator
         private readonly ReadMethods _reader;
         private readonly ConversionMethods _converter;
         private readonly DeleteMethods _deleter;
-        private readonly SerializationMethods _serializer;
+        public readonly SerializationMethods _serializer;
 
         private static bool continueOrExit = true;
 
@@ -34,20 +34,20 @@ namespace File_Deduplicator
             {
                 user.SetPrimaryDirectoryAndDirectories();
                 DisplayMethods.DisplayMessageGeneric("Gathering All Files from Directories");
-                List<FileInfo> allFilesContainer = await ReadMethods.ReadDirectoriesAsync(user.Directories); // Contains every file from all directories
+                List<FileInfo> allFilesContainer = await _reader.ReadDirectoriesAsync(user.Directories); // Contains every file from all directories
 
                 DisplayMethods.DisplayMessageGeneric("Converting Files to Hash Strings");
-                Dictionary<string, ConcurrentBag<FileInfo>> convertedData = await ConversionMethods.ConvertFileToHashStringAsync(allFilesContainer); // Contains all files with a HashString associated to it
+                Dictionary<string, ConcurrentBag<FileInfo>> convertedData = await _converter.ConvertFileToHashStringAsync(allFilesContainer); // Contains all files with a HashString associated to it
 
                 DisplayMethods.DisplayMessageGeneric("Displaying Duplicate Files");
-                List<FileInfo> duplicateFiles = DeleteMethods.RemoveDuplicatesFromData(convertedData);
-                DeleteMethods.DeleteCheck(duplicateFiles, user);
+                List<FileInfo> duplicateFiles = _deleter.RemoveDuplicatesFromData(convertedData);
+                _deleter.DeleteCheck(duplicateFiles, user);
 
                 DisplayMethods.DisplayMessageGeneric("Continue Request");
                 continueOrExit = DisplayMethods.DisplayUserConfirmation("Enter Y to search another directory: ");
             }
             user.ViewCumulativeStorageFreed();
-            SerializationMethods.SerializeUserDataAsJson<User>(user);
+            _serializer.SerializeUserDataAsJson<User>(user);
         }
     }
 }

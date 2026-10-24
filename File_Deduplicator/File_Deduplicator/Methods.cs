@@ -105,11 +105,12 @@ namespace File_Deduplicator.Methods
             _logger = logger;
         }
 
-        public static async Task<List<FileInfo>> ReadDirectoriesAsync(IEnumerable<DirectoryInfo> directories)
+        public async Task<List<FileInfo>> ReadDirectoriesAsync(IEnumerable<DirectoryInfo> directories)
         {
             ConcurrentBag<FileInfo> allFiles = new ConcurrentBag<FileInfo>();
             ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
+            _logger.LogInformation("Beginning to process all directories and pull out files");
             await Parallel.ForEachAsync(directories, parOpts, async (directory, _) =>
             {
                 try
@@ -124,9 +125,11 @@ namespace File_Deduplicator.Methods
                 {
                     string message = $"{ConversionMethods.ConvertTextToSubstring(directory)} -- Exception: {ex.Message}";
                     Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
+                    _logger.LogError(ex, message);
                 }
             });
             DisplayMethods.DisplayMessageGeneric("Done processing all files!", $"Total Files: {allFiles.Count(): #,##0}\n");
+            _logger.LogInformation("All files processed and logged");
             await Task.Delay(3000);
 
             return allFiles.ToList();
@@ -145,11 +148,12 @@ namespace File_Deduplicator.Methods
         private const long BYTES_IN_MB = 1024 * 1024;
         private const long BYTES_IN_GB = 1024 * 1024 * 1024;
 
-        public static async Task<Dictionary<string, ConcurrentBag<FileInfo>>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
+        public async Task<Dictionary<string, ConcurrentBag<FileInfo>>> ConvertFileToHashStringAsync(IEnumerable<FileInfo> filesToConvert)
         {
             ConcurrentDictionary<string, ConcurrentBag<FileInfo>> fileAndHashString = new ConcurrentDictionary<string, ConcurrentBag<FileInfo>>();
             ParallelOptions parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
+            _logger.LogInformation("Beginning to convert all files into HashStrings");
             await Parallel.ForEachAsync(filesToConvert, parOpts, async (file, _) =>
             {
                 try
@@ -170,9 +174,11 @@ namespace File_Deduplicator.Methods
                 {
                     string message = $"{ConversionMethods.ConvertTextToSubstring(file)} -- Exception: {ex.Message}";
                     Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
+                    _logger.LogError(ex, message);
                 }
             });
             Console.WriteLine("\tFinished converting files to Hash Strings\n");
+            _logger.LogInformation("All files attempted to be converted to HashString");
             return fileAndHashString.ToDictionary();
         }
 
@@ -214,9 +220,10 @@ namespace File_Deduplicator.Methods
             _logger = logger;
         }
 
-        public static List<FileInfo> RemoveDuplicatesFromData(IEnumerable<KeyValuePair<string, ConcurrentBag<FileInfo>>> convertedData)
+        public List<FileInfo> RemoveDuplicatesFromData(IEnumerable<KeyValuePair<string, ConcurrentBag<FileInfo>>> convertedData)
         {
             List<FileInfo> duplicateFiles = new List<FileInfo>();
+            _logger.LogInformation("Ordering all files and retrieving duplicates");
             foreach (KeyValuePair<string, ConcurrentBag<FileInfo>> kvp in convertedData)
             {
                 var duplicates = kvp.Value.OrderBy(f => f.CreationTime).Skip(1).ToList();
@@ -227,15 +234,17 @@ namespace File_Deduplicator.Methods
             return duplicateFiles;
         }
 
-        public static void DeleteCheck(IEnumerable<FileInfo> allFiles, User user)
+        public void DeleteCheck(IEnumerable<FileInfo> allFiles, User user)
         {
+            _logger.LogInformation("Attempting to delete duplicate files");
             if (allFiles.Any())
             {
+                _logger.LogInformation("Duplicates found -- requesting use confirmation to delete");
                 long storageFreed = allFiles.Sum(file => file.Length);
-                bool b = DisplayMethods.DisplayUserConfirmation("Enter Y to delete duplicate files: ");
-                DeleteMethods.DeleteDuplicates(allFiles, b);
+                bool userConfirmation = DisplayMethods.DisplayUserConfirmation("Enter Y to delete duplicate files: ");
+                DeleteDuplicates(allFiles, userConfirmation);
 
-                if (b)
+                if (userConfirmation)
                 {
                     user.SessionStorageFreed += storageFreed;
                     user.LifetimeStorageFreed += storageFreed;
@@ -246,14 +255,15 @@ namespace File_Deduplicator.Methods
             }
         }
 
-        public static void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)
+        public void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)
         {
             if (confirmation)
             {
+                _logger.LogInformation("User confirmed deletion -- beginning to delete files");
                 foreach (FileInfo file in duplicateFiles)
                 {
                     try
-                    {
+                    { 
                         file.Delete();
                         Console.WriteLine($"\tDeleted: {file.FullName}");
                     }
@@ -261,18 +271,20 @@ namespace File_Deduplicator.Methods
                     {
                         string message = $"{ConversionMethods.ConvertTextToSubstring(file)} -- Exception: {ex.Message}";
                         Console.WriteLine(DisplayMethods.DisplayProcessedException(ex, message));
+                        _logger.LogError(ex, message);
                     }
                 }
                 Console.WriteLine();
             }
             else
             {
+                _logger.LogInformation("User denied deletion request");
                 Console.WriteLine("\tDeletion canceled by user");
             }
         }
     }
 
-    internal class SerializationMethods
+    public class SerializationMethods
     {
         private readonly ILogger<SerializationMethods> _logger;
 
@@ -287,36 +299,43 @@ namespace File_Deduplicator.Methods
             IncludeFields = true, WriteIndented = true, PropertyNamingPolicy = null, PropertyNameCaseInsensitive = true 
         };
 
-        public static void SerializeUserDataAsJson<T>(T userData)
+        public void SerializeUserDataAsJson<T>(T userData)
         {
             Console.WriteLine($"Saving file as: {FileName}");
-
+            _logger.LogInformation("Attempting to serialize user information");
             try
             {
                 File.WriteAllText(FileName, System.Text.Json.JsonSerializer.Serialize(userData, Options));
                 Console.WriteLine("Saved user info!");
+                _logger.LogInformation("User successfully serialized");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"File not saved: {ex.Message}");
+                _logger.LogError(ex, "User not serialized");
             }
+
         }
 
-        public static T DeserializeUserDataAsJson<T>()
+        public T DeserializeUserDataAsJson<T>()
         {
+            _logger.LogInformation("Attempting to deserialize user info");
             return System.Text.Json.JsonSerializer.Deserialize<T>(File.ReadAllText(FileName), Options);
         }
 
-        public static User FileExistCheck()
+        public User FileExistCheck()
         {
             User userInfo;
+            _logger.LogInformation("Attempting to find user information");
             if (File.Exists(FileName))
             {
+                _logger.LogInformation("User information found");
                 Console.WriteLine("Found user data!\n");
                 userInfo = DeserializeUserDataAsJson<User>();
             }
             else
             {
+                _logger.LogInformation("User information not found");
                 Console.WriteLine("No user data found\n");
                 userInfo = new User();
             }

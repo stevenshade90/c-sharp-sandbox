@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace File_Deduplicator.UserClass
 {
-    internal class User : IDisposable
+    public class User : IDisposable
     {
         [JsonIgnore]
         public DriveInfo[] Drives { get; private set; }
