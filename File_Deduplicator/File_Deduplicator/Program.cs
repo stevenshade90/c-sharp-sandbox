@@ -8,7 +8,8 @@ namespace File_Deduplicator
     {
         static async Task Main(string[] args)
         {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            string logPath = $"DiagnosticReport/DeduplicationLog-{DateTime.Now.ToString("HH-mm-ss")}.txt";
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddFile(logPath));
 
             ProgramOrchestrator orchestrator = new ProgramOrchestrator(loggerFactory);
 
