@@ -236,7 +236,6 @@ namespace File_Deduplicator.Methods
 
         public void DeleteCheck(IEnumerable<FileInfo> allFiles, User user)
         {
-            _logger.LogInformation("Attempting to delete duplicate files");
             if (allFiles.Any())
             {
                 _logger.LogInformation("Duplicates found -- requesting use confirmation to delete");
@@ -257,6 +256,7 @@ namespace File_Deduplicator.Methods
 
         public void DeleteDuplicates(IEnumerable<FileInfo> duplicateFiles, bool confirmation)
         {
+            _logger.LogInformation("Attempting to delete duplicate files");
             if (confirmation)
             {
                 _logger.LogInformation("User confirmed deletion -- beginning to delete files");
