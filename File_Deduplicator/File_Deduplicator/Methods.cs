@@ -78,22 +78,6 @@ namespace File_Deduplicator.Methods
                 _ => ConversionMethods.ConvertTextToSubstring($"Unexpected error: {additionalInfo}")
             };
         }
-
-        [Obsolete("Currently unused")]
-        public static void DisplayLoadingImage(Task awaitingTask)
-        {
-            int iterator = 1;
-            Console.ForegroundColor = ConsoleColor.Green;
-            char[] loading = { '|', '/', '-', '\\' };
-
-            while (!awaitingTask.IsCompleted)
-            {
-                Console.Write("\rLoading information... {0}", loading[iterator % 4]);
-                iterator++;
-                Thread.Sleep(100);
-            }
-            Console.ResetColor();
-        }
     }
 
     internal class ReadMethods
@@ -161,14 +145,13 @@ namespace File_Deduplicator.Methods
                     if (file.Attributes.HasFlag(FileAttributes.Offline)) return;
                     if (file.GetType() != typeof(FileInfo)) return;
 
-                    using (FileStream fs = File.OpenRead(file.FullName))
-                    {
-                        byte[] hashBytes = SHA256.HashData(fs);
-                        string hashString = Convert.ToHexString(hashBytes);
+                    using FileStream fs = File.OpenRead(file.FullName);             
+                    byte[] hashBytes = SHA256.HashData(fs);
+                    string hashString = Convert.ToHexString(hashBytes);
 
-                        ConcurrentBag<FileInfo> filebag = fileAndHashString.GetOrAdd(hashString, _ => new ConcurrentBag<FileInfo>());
-                        filebag.Add(file);
-                    }
+                    ConcurrentBag<FileInfo> filebag = fileAndHashString.GetOrAdd(hashString, _ => new ConcurrentBag<FileInfo>());
+                    filebag.Add(file);
+                    
                 }
                 catch (Exception ex)
                 {
