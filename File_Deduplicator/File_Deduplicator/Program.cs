@@ -13,10 +13,7 @@ namespace File_Deduplicator
 
             ProgramOrchestrator orchestrator = new ProgramOrchestrator(loggerFactory);
 
-            DisplayMethods.DisplayMessageGeneric("Loading User");
-            User user1 = orchestrator._serializer.FileExistCheck();
-
-            await orchestrator.ExecuteProgram(user1);
+            await orchestrator.ExecuteProgram();
         }
     }
 }

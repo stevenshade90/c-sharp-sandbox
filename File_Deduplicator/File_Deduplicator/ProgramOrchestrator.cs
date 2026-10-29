@@ -28,8 +28,11 @@ namespace File_Deduplicator
             _serializer = new SerializationMethods(loggerFactory.CreateLogger<SerializationMethods>());
         }
 
-        public async Task ExecuteProgram(User user)
+        public async Task ExecuteProgram()
         {
+            DisplayMethods.DisplayMessageGeneric("Loading User");
+            User user = _serializer.FileExistCheck();
+
             while (continueOrExit)
             {
                 user.SetPrimaryDirectoryAndDirectories();
