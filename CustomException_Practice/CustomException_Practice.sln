@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.11.12306.390 stable
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomException_Practice", "ConsoleApp113\CustomException_Practice.csproj", "{BB55A936-A8CE-4515-AB58-04FA3085FEAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB55A936-A8CE-4515-AB58-04FA3085FEAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB55A936-A8CE-4515-AB58-04FA3085FEAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB55A936-A8CE-4515-AB58-04FA3085FEAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB55A936-A8CE-4515-AB58-04FA3085FEAF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {83A721F6-564A-4AD8-9ABC-7E4F268E6FD6}
+	EndGlobalSection
+EndGlobal
