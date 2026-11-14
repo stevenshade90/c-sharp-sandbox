@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.11.12306.390 stable
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitwiseOperations_Practice2", "ConsoleApp87\BitwiseOperations_Practice2.csproj", "{18FDD073-AB97-47A0-9477-7766E38AA76B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18FDD073-AB97-47A0-9477-7766E38AA76B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18FDD073-AB97-47A0-9477-7766E38AA76B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18FDD073-AB97-47A0-9477-7766E38AA76B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18FDD073-AB97-47A0-9477-7766E38AA76B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E09B85FC-3E81-410C-838D-51CC61CAB60D}
+	EndGlobalSection
+EndGlobal
